@@ -42,20 +42,25 @@ class mailManager{
      */
     public function listMessages()
     {
+        // log all state to this file
+        $output_log_file = "output_log.txt";
+        file_put_contents($output_log_file, "start the listing messages....\n");
 
         $service = new Google_Service_Gmail($this->client);
 
-        $profile = $service->users->getProfile('me');
-        $email = $profile->getEmailAddress();
+        $profile = $service->users->getProfile('me'); 
+        $email = $profile->getEmailAddress(); // get user's email address
         // Print the labels in the user's account.
-        $userId = 'me';
-        $pageToken = NULL;
-        $messages = array();
-        $opt_param = array();
+        $userId = 'me';    // indicate the authenticated user
+        $pageToken = NULL;   // for the next page
+        $messages = array();   //store all messages
+        $opt_param = array(); // query optional parameter for gmail api
 
-        $endTime = new DateTime();
-        $startTime = clone $endTime;
-   //     $startTime->sub(new DateInterval('P1D'));
+        // get today's date
+        $startTime = new DateTime();
+
+        file_put_contents($output_log_file, $startTime->format('Y/m/d') . "\n", FILE_APPEND);
+        // mail query to get today mails
         $query = 'after:' . $startTime->format('Y/m/d');
 
         do {
@@ -69,7 +74,6 @@ class mailManager{
                 }
 
                 $messagesResponse = $service->users_messages->listUsersMessages($userId, $opt_param);
-                echo json_encode($messagesResponse);
                 if ($messagesResponse->getMessages()) {
                     $messages = array_merge($messages, $messagesResponse->getMessages());
                     $pageToken = $messagesResponse->getNextPageToken();
@@ -79,6 +83,7 @@ class mailManager{
                 }
             } catch (Exception $e) {
                 print 'An error occurred: ' . $e->getMessage();
+                file_put_contents($output_log_file, "Error:" . $e->getMessage() . "\n", FILE_APPEND);
             }
         } while ($pageToken);
 
@@ -86,7 +91,6 @@ class mailManager{
         $decoded_msg = array();
         $message_info = array();
 
-        echo json_encode($messages);
         foreach ($messages as $message) {
             $receivedObject = new stdClass();
 
@@ -95,6 +99,7 @@ class mailManager{
             $receivedObject->id = $msg->getId();
             //get sender email address from $msg
             $headers = $msg->getPayload()->getHeaders();
+
 
             
             foreach ($headers as $header) {
@@ -127,6 +132,8 @@ class mailManager{
                 }
             }
 
+           
+
             array_push($message_info, $receivedObject);
 
             $parts = $msg->getPayload()->getParts();
@@ -146,16 +153,18 @@ class mailManager{
             if($email != $info->sender)
              {
 
-                
-                try {
+                file_put_contents($output_log_file, "Message: From " . $info->from . "\n", FILE_APPEND);
+                file_put_contents($output_log_file, "Message: Date " . $info->date . "\n", FILE_APPEND);
+                file_put_contents($output_log_file, "Message: Subject " . $info->subject . "\n", FILE_APPEND);
+
+               try {
                     //code...
                     $result = $this->getChatGPTAnswer($info->content);
-                    echo $info->sender . "\n";
-                    echo json_encode($result);
-                    Thread.sleep(100);
-                    break;
-                } catch (Throwable $th) {
-                }
+                    sleep(1);
+                   break;
+               } catch (Throwable $th) {
+                    file_put_contents($output_log_file, "error: Error at getting chatGPT answer for " . $info->content . "\n", FILE_APPEND);
+               }
                 
              }  
             if($result){
@@ -191,6 +200,10 @@ class mailManager{
 
     // get chatgpt anwer using api
     function getChatGPTAnswer($question){
+        echo $question;
+        $output_log_file = "output_log.txt";
+        
+
         $client = new Client([
             'base_uri' => MailRsEnv::$baseUriForOpenAI,
             'headers' => [
@@ -215,11 +228,21 @@ class mailManager{
         ];
         try {
             $response = $client->post('/chat/completions', $options);
-            
-            return json_decode($response->getBody()->getContents(), true)['choices'][0]["message"]['content'];
-            return "";
+            file_put_contents($output_log_file, "got response....\n", FILE_APPEND);
+            $response_data = json_decode($response->getBody()->getContents(), true);
+
+            if($response_data){
+                if($response_data['choices']){
+                    if(count($response_data['choices']) > 0){
+                        if($response_data['choices'][0]["message"]['content']){
+                            return $response_data['choices'][0]["message"]['content'];
+                        }
+                    }
+                }
+            }
+            return null;
         } catch (Exception $e) {
-            echo 'Error: ' . $e->getMessage();
+            file_put_contents($output_log_file, 'Error: ' . $e->getMessage() . "\n", File_APPEND);
             return null;
         }
     }
