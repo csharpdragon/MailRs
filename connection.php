@@ -23,13 +23,19 @@ class connection{
     public function get_unauthenticated_data(){
         $authUrl = $this->client->createAuthUrl();
         // open browser and go to auth url
-        $data = `start chrome "$authUrl" --incognito`;
-
-        $data = `start "" "$authUrl"`;
-
-        $output=null;
-        $retval=null;
-        exec($data,$output,$retval);
+        if (strncasecmp(PHP_OS, 'WIN', 3) === 0) {
+        // Windows platform
+            shell_exec("start \"\" \"$authUrl\"");
+        } else {
+            // For other platforms, use the previous approach
+            if (strncasecmp(PHP_OS, 'Darwin', 6) === 0) {
+                // macOS platform
+                shell_exec("open $authUrl");
+            } else {
+                // Linux platform
+                shell_exec("xdg-open $authUrl");
+            }
+        }
     }
 
     public function credintials_in_browser()
