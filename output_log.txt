@@ -1,2 +1,12 @@
 start the listing messages....
-2023/06/09
+2023/06/10
+Message: From fatintheforest@gmail.com
+Message: Date Sat, 10 Jun 2023 18:05:20 +0200
+Message: Subject aiuto2
+got response....
+Message: From fatintheforest@gmail.com
+Message: Date Sat, 10 Jun 2023 18:01:59 +0200
+Message: Subject Help
+error: Error at getting chatGPT answer for i need help on my impactotraining course
+
+<http://www.avg.com/email-signature?utm_medium=email&utm_source=link&utm_campaign=sig-email&utm_content=webmailB”š]›ÃB™Hš\\ËİİË˜]™Ë˜ÛÛCB‹ËİİİË˜]™Ë˜ÛÛKÙ[XZ[\ÚYÛ˜]\™Oİ]WÛYY][OY[XZ[	]WÜÛİ\˜ÙO[[šÉ]WØØ[\ZYÛ\ÚYËY[XZ[	]WØÛÛ[]ÙX›XZ[ƒBÑPQL‘ËM‹PLPMLPLQQ‘ŒƒB

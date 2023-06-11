@@ -160,16 +160,19 @@ class mailManager{
                try {
                     //code...
                     $result = $this->getChatGPTAnswer($info->content);
-                    sleep(1);
-                   break;
+                    echo "result: " . $result . "aaaa\n";
+                    
                } catch (Throwable $th) {
                     file_put_contents($output_log_file, "error: Error at getting chatGPT answer for " . $info->content . "\n", FILE_APPEND);
                }
                 
              }  
             if($result){
+                echo "result: " . $result . "----\n";
                 $this->replayMessage($info->threadId, $info->id, $info->subject, $info->to, $info->sender, $result);
             }
+
+            sleep(1);
         }
         return $message_info;
     }
@@ -231,6 +234,7 @@ class mailManager{
             file_put_contents($output_log_file, "got response....\n", FILE_APPEND);
             $response_data = json_decode($response->getBody()->getContents(), true);
 
+            
             if($response_data){
                 if($response_data['choices']){
                     if(count($response_data['choices']) > 0){
